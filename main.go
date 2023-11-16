@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -19,10 +21,19 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Get the port from the environment
+	// Get the port and dbUrl from the environment
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
+	}
+	dbUrl := os.Getenv("DB_URL")
+	if dbUrl == "" {
+		log.Fatal("$DB_URL must be set")
+	}
+
+	conn, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println("Server starting on port " + port)
