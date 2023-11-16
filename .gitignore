@@ -2,6 +2,7 @@
 /bin/
 /obj/
 /pkg/
+RSSAggregator
 
 # IntelliJ IDEA files
 .idea/
