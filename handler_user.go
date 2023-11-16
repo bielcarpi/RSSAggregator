@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/bielcarpi/RSSAggregator/internal/auth"
 	"github.com/bielcarpi/RSSAggregator/internal/db"
 	"github.com/google/uuid"
 	"net/http"
@@ -34,5 +35,21 @@ func (apiConfig *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, DBUserToUser(usr))
+	respondWithJSON(w, http.StatusCreated, DBUserToUser(usr))
+}
+
+func (apiConfig *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
+	api, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusForbidden, err.Error())
+		return
+	}
+
+	user, err := apiConfig.DB.GetUserByAPIKey(r.Context(), api)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, DBUserToUser(user))
 }
