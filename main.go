@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/bielcarpi/RSSAggregator/internal/db"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,10 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *db.Queries
+}
 
 func main() {
 
@@ -31,9 +36,15 @@ func main() {
 		log.Fatal("$DB_URL must be set")
 	}
 
+	// Connect to the database
 	conn, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// Create a new apiConfig
+	apiConfig := apiConfig{
+		DB: db.New(conn),
 	}
 
 	fmt.Println("Server starting on port " + port)
@@ -53,6 +64,7 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/error", handlerError)
+	v1Router.Post("/createUser", apiConfig.handlerCreateUser)
 
 	// Mount the v1Router under /v1
 	router.Mount("/v1", v1Router)
