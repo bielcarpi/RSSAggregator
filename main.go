@@ -53,7 +53,7 @@ func main() {
 	// Set up CORS
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE"},
 		AllowedHeaders:   []string{"*"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
@@ -64,10 +64,16 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/error", handlerError)
-	v1Router.Post("/user", apiConfig.handlerCreateUser)                           // Create User
-	v1Router.Get("/user", apiConfig.middlewareAuth(apiConfig.handlerGetUser))     //Get User (auth)
-	v1Router.Post("/feed", apiConfig.middlewareAuth(apiConfig.handlerCreateFeed)) //Get User (auth)
-	v1Router.Get("/feeds", apiConfig.handlerGetFeeds)                             //Get Feeds
+
+	v1Router.Post("/user", apiConfig.handlerCreateUser)
+	v1Router.Get("/user", apiConfig.middlewareAuth(apiConfig.handlerGetUser))
+
+	v1Router.Post("/feed", apiConfig.middlewareAuth(apiConfig.handlerCreateFeed))
+	v1Router.Get("/feeds", apiConfig.handlerGetFeeds)
+
+	v1Router.Post("/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerCreateFeedFollow))
+	v1Router.Get("/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerGetFeedFollows))
+	v1Router.Delete("/feed_follows/{feedFollowID}", apiConfig.middlewareAuth(apiConfig.handlerDeleteFeedFollows))
 
 	// Mount the v1Router under /v1
 	router.Mount("/v1", v1Router)
