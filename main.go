@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -43,8 +44,9 @@ func main() {
 	}
 
 	// Create a new apiConfig
+	dbConn := db.New(conn)
 	apiConfig := apiConfig{
-		DB: db.New(conn),
+		DB: dbConn,
 	}
 
 	fmt.Println("Server starting on port " + port)
@@ -77,6 +79,9 @@ func main() {
 
 	// Mount the v1Router under /v1
 	router.Mount("/v1", v1Router)
+
+	// Start scrapping for RSS Feeds
+	go startScraping(dbConn, 10, time.Minute)
 
 	// Start the server
 	server := &http.Server{
